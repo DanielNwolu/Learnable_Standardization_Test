@@ -4,12 +4,30 @@ import bcrypt from 'bcrypt';
 
 const userSchema = new Schema(
   {
-
-    username: {
-        type: String,
-        required: true,
-        maxlength: [50, 'user name should not exceed 50 characters'],
-        minlength: [5, 'user name should be at lest 8 characters']
+    firstName: {
+      type: String,
+      required: [true, 'First name is required'],
+      trim: true,
+      maxlength: [50, 'First name should not exceed 50 characters'],
+      minlength: [2, 'First name should be at least 2 characters']
+    },
+    surname: {
+      type: String,
+      required: [true, 'Surname is required'],
+      trim: true,
+      maxlength: [50, 'Surname should not exceed 50 characters'],
+      minlength: [2, 'Surname should be at least 2 characters']
+    },
+    accountNumber: {
+    type: String,
+    required: [true, 'Account number is required'],
+    unique: true,
+    validate: {
+      validator: function(v: string) {
+        return /^\d{10}$/.test(v); // Validates exactly 10 digits
+      },
+      message: (props: { value: string }) => `${props.value} is not a valid account number! Must be 10 digits.`
+    }
     },
     email: {
       type: String,
@@ -24,6 +42,28 @@ const userSchema = new Schema(
         message: props => `${props.value} is not a valid email address!`
       }
     },
+    phoneNumber: {
+      type: String,
+      required: [true, 'Phone number is required'],
+      trim: true,
+      validate: {
+        validator: function(v: string) {
+          // Basic international phone number validation
+          return /^\+?[\d\s-]{10,}$/.test(v);
+        },
+        message: props => `${props.value} is not a valid phone number!`
+      }
+    },
+    dateOfBirth: {
+      type: Date,
+      required: [true, 'Date of birth is required'],
+      validate: {
+        validator: function(v: Date) {
+          return v <= new Date() && v >= new Date('1900-01-01');
+        },
+        message: 'Please provide a valid date of birth'
+      }
+    },
     password: {
       type: String,
       required: [true, 'Password is required'],
@@ -31,7 +71,6 @@ const userSchema = new Schema(
       minlength: [8, 'Password must be at least 8 characters'],
       validate: {
         validator: function(v: string) {
-          // At least 8 chars, one uppercase, one lowercase, one number
           return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/.test(v);
         },
         message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
@@ -46,7 +85,6 @@ const userSchema = new Schema(
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
-  // Only hash the password if it's modified or new
   if (!this.isModified('password')) return next();
   
   try {

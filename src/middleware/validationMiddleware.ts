@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { BadRequestError } from '../utils/errorClasses';
+import Joi from 'joi';
 
 // Generic validation middleware
 export function validateRequest<T>(validator: (data: any) => { valid: boolean; errors: string[] }) {
@@ -14,90 +15,45 @@ export function validateRequest<T>(validator: (data: any) => { valid: boolean; e
   };
 }
 
-// Validator for creating notes
-export function validateNote(data: any): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-  
-  if (!data.title) {
-    errors.push('Title is required');
-  } else if (data.title.length > 100) {
-    errors.push('Title cannot be more than 100 characters');
+// Example validation schema for user creation
+const createUserSchema = Joi.object({
+  firstName: Joi.string().required(),
+  surname: Joi.string().required(),
+  email: Joi.string().email().required(),
+  phoneNumber: Joi.string().pattern(/^[0-9]{10,}$/).required(), // at least 10 digits
+  dateOfBirth: Joi.date().iso().required(),
+  password: Joi.string()
+    .min(8)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character',
+      'string.min': 'Password must be at least 8 characters long'
+    }),
+});
+// Example validation function for user creation
+export const validateCreateUser = (req: Request, res: Response, next: NextFunction) => {
+  const { error } = createUserSchema.validate(req.body);
+  if (error) {
+    return next(new BadRequestError(`Validation error: ${error.details.map(detail => detail.message).join(', ')}`));
   }
-  
-  if (!data.content) {
-    errors.push('Content is required');
-  }
-  
-  // categoryId is optional, so we don't check for its presence
-  
-  return {
-    valid: errors.length === 0,
-    errors
-  };
-}
+  next();
+};
 
-// Validator for updating notes
-export function validateNoteUpdate(data: any): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-  
-  if (data.title !== undefined && data.title.length > 100) {
-    errors.push('Title cannot be more than 100 characters');
-  }
-  
-  // Other fields are optional with no specific validation constraints
-  
-  return {
-    valid: errors.length === 0,
-    errors
-  };
-}
+// Example validation schema for user login
+const loginUserSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required(),
+});
 
-// Validator for creating users
-export function validateUser(data: any): { valid: boolean; errors: string[] } { 
-  const errors: string[] = [];
-  
-  if (!data.username) {
-    errors.push('Username is required');
-  } else if (data.username.length > 50) {
-    errors.push('Username cannot be more than 50 characters');
+// Example validation function for user login
+export const validateLoginUser = (req: Request, res: Response, next: NextFunction) => {
+  const { error } = loginUserSchema.validate(req.body);
+  if (error) {
+    return next(new BadRequestError(`Validation error: ${error.details.map(detail => detail.message).join(', ')}`));
   }
-  
-  if (!data.email) {
-    errors.push('Email is required');
-  } else if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(data.email)) {
-    errors.push('Email is not valid');
-  }
-  
-  if (!data.password) {
-    errors.push('Password is required');
-  } else if (!/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/.test(data.password)) {
-    errors.push('Password must contain at least one uppercase letter, one lowercase letter, and one number');
-  }
-  
-  return {
-    valid: errors.length === 0,
-    errors
-  };
-}
+  next();
+};
 
-// Validator for updating users
-export function validateUserUpdate(data: any): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-  
-  if (data.username && data.username.length > 50) {
-    errors.push('Username cannot be more than 50 characters');
-  }
-  
-  if (data.email && !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(data.email)) {
-    errors.push('Email is not valid');
-  }
-  
-  if (data.password && !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/.test(data.password)) {
-    errors.push('Password must contain at least one uppercase letter, one lowercase letter, and one number');
-  }
-  
-  return {
-    valid: errors.length === 0,
-    errors
-  };
-}
+
+

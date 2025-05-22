@@ -1,12 +1,15 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { loginUser, registerUser } from '../controllers/authController';
+import { loginUser, register } from '../controllers/authController';
 import { requestLogger } from '../middleware/loggingMiddleware';
-
+import { validateCreateUser, validateLoginUser } from '../middleware/validationMiddleware';
 
 const router = Router();
 
-router.post('/login',requestLogger, loginUser);
+// Middleware to log request details
+router.use(requestLogger);
 
-router.post('/register',requestLogger,registerUser)
+router.post('/login', validateLoginUser,loginUser);
+
+router.post('/register',validateCreateUser,register)
 
 export default router;

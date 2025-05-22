@@ -2,7 +2,7 @@
 export interface Session {
     id: number;
     dateCreated: number;
-    username: string;
+    firstName: string;
     email:string;
     /**
      * Timestamp indicating when the session was created, in Unix milliseconds.

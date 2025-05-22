@@ -54,3 +54,7 @@ coverage/
 # Temp files
 tmp/
 temp/
+
+# RSA keys
+/rsa_private.pem
+/rsa_public.pem

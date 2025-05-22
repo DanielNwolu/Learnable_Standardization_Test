@@ -1,9 +1,13 @@
 import { Document } from 'mongoose';
 
-export interface User extends Document{
+export interface User extends Document {
     _id: string;
-    username: string;
+    firstName: string;
+    surname: string;
     email: string;
+    phoneNumber: string;
+    dateOfBirth: Date;
+    accountNumber: string; // 10-digit number
     password?: string;
     createdAt: Date;
     updatedAt: Date;
@@ -12,23 +16,31 @@ export interface User extends Document{
 
 // for user creation validation
 export interface CreateUserRequest {
-    username: string;
+    firstName: string;
+    surname: string;
     email: string;
+    phoneNumber: string;
+    dateOfBirth: Date;
     password: string;
 }
 
-
 // for user update validation
 export interface UpdateUserRequest {
-    username?: string;
+    firstName?: string;
+    surname?: string;
     email?: string;
+    phoneNumber?: string;
+    dateOfBirth?: Date;
 }
 
 // for user response
 export interface UserResponse {
     _id: string;
-    username: string;
+    firstName: string;
+    surname: string;
     email: string;
+    phoneNumber: string;
+    dateOfBirth: Date;
     createdAt: Date;
     updatedAt: Date;
 }

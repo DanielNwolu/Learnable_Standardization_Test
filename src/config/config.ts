@@ -7,15 +7,11 @@ dotenv.config({
 });
 
 const envSchema = Joi.object().keys({
-//   NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
+  NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
   PORT: Joi.number().required().default('4000'),
   ACCESS_TOKEN_SECRET: Joi.string().min(8).required(),
   API_V1_STR:Joi.string().required(),
   MONGO_URI:Joi.string().required(),
-//   ACCESS_TOKEN_EXPIRE: Joi.string().required().default('20m'),
-//   REFRESH_TOKEN_SECRET: Joi.string().min(8).required(),
-//   REFRESH_TOKEN_EXPIRE: Joi.string().required().default('1d'),
-//   REFRESH_TOKEN_COOKIE_NAME: Joi.string().required().default('jid'),
 
 });
 
@@ -31,7 +27,7 @@ if (error) {
   );
 }
 
-const config = {
+const settings = {
   node_env: validatedEnv.NODE_ENV,
   server: {
     port: validatedEnv.PORT,
@@ -44,8 +40,12 @@ const config = {
       cookie_name: validatedEnv.REFRESH_TOKEN_COOKIE_NAME
     }
   },
+  rsa: {
+    publicKey: validatedEnv.RSA_PUBLIC_KEY,
+    privateKey: validatedEnv.RSA_PRIVATE_KEY,
+  },
   api:validatedEnv.API_V1_STR,
   dbUrl:validatedEnv.MONGO_URI,
 } as const;
 
-export default config;
+export default settings;
