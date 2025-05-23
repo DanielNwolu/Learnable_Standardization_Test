@@ -58,3 +58,5 @@ temp/
 # RSA keys
 /rsa_private.pem
 /rsa_public.pem
+private.pem
+public.pem

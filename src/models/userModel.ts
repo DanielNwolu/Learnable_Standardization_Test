@@ -40,29 +40,29 @@ const userSchema = new Schema(
           return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v);
         },
         message: props => `${props.value} is not a valid email address!`
-      }
-    },
-    phoneNumber: {
-      type: String,
-      required: [true, 'Phone number is required'],
-      trim: true,
-      validate: {
+            }
+          },
+          phoneNumber: {
+            type: String,
+            required: [true, 'Phone number is required'],
+            trim: true,
+            validate: {
         validator: function(v: string) {
-          // Basic international phone number validation
-          return /^\+?[\d\s-]{10,}$/.test(v);
+          // Allow any string format since it will be hashed
+          return typeof v === 'string' && v.length > 0;
         },
-        message: props => `${props.value} is not a valid phone number!`
-      }
-    },
-    dateOfBirth: {
-      type: Date,
-      required: [true, 'Date of birth is required'],
-      validate: {
-        validator: function(v: Date) {
-          return v <= new Date() && v >= new Date('1900-01-01');
-        },
-        message: 'Please provide a valid date of birth'
-      }
+        message: props => `Phone number must be a non-empty string`
+            }
+          },
+          dateOfBirth: {
+          type: Date,
+          required: [true, 'Date of birth is required'],
+          validate: {
+            validator: function(v: Date) {
+        return v <= new Date() && v >= new Date('1900-01-01');
+      },
+      message: 'Please provide a valid date of birth'
+    }
     },
     password: {
       type: String,

@@ -1,6 +1,7 @@
 // src/services/authService.ts
 import crypto from 'crypto';
 import User from '../models/userModel';
+import EncryptData  from '../models/encryptedModel';
 import { VirtualCardModel } from '../models/virtualCardModel';
 import { generateAccountNumber } from '../utils/generateAccount';
 import { generateVirtualCard } from '../utils/generateVirtualCard';
@@ -20,7 +21,6 @@ if (!rsaKeys.publicKey || !rsaKeys.privateKey) {
 function hashPhone(phoneNumber: string): string {
   return crypto.createHash('sha256').update(phoneNumber).digest('hex');
 }
-
 export async function registerUser(userData: CreateUserRequest): Promise<any> {
   const { firstName, surname, email, phoneNumber, dateOfBirth, password } = userData;
 
@@ -41,6 +41,7 @@ export async function registerUser(userData: CreateUserRequest): Promise<any> {
   const accountNumber = generateAccountNumber();
   const card = generateVirtualCard();
 
+  // Encrypt sensitive data
   const encryptedCardNumber = RSAUtils.encrypt(rsaKeys.publicKey, card.cardNumber).toString('base64');
   const encryptedCVV = RSAUtils.encrypt(rsaKeys.publicKey, card.cvv).toString('base64');
   const encryptedExpiryDate = RSAUtils.encrypt(rsaKeys.publicKey, card.expiry).toString('base64');
@@ -51,12 +52,21 @@ export async function registerUser(userData: CreateUserRequest): Promise<any> {
     firstName,
     surname,
     email,
-    phoneNumber: encryptedPhoneNumber,
-    phoneHash,
-    dateOfBirth: encryptedDOB,
     password,
+    phoneNumber: phoneHash,
     accountNumber,
+    dateOfBirth
   });
+
+  const encryptedData = new EncryptData({
+    userId: user._id,
+    cardNumber: encryptedCardNumber,
+    cvv: encryptedCVV,
+    expiryDate: encryptedExpiryDate,
+    phoneNumber: encryptedPhoneNumber,
+    dateOfBirth: encryptedDOB,
+  });
+  await encryptedData.save();
 
   await VirtualCardModel.create({
     customerId: user._id,
@@ -65,6 +75,15 @@ export async function registerUser(userData: CreateUserRequest): Promise<any> {
     expiryDate: new Date(`${card.expiry}`),
     status: 'ACTIVE',
   });
+
+  // Decrypt data for testing response only
+  const decryptedData = {
+    cardNumber: RSAUtils.decrypt(rsaKeys.privateKey, Buffer.from(encryptedCardNumber, 'base64')).toString(),
+    cvv: RSAUtils.decrypt(rsaKeys.privateKey, Buffer.from(encryptedCVV, 'base64')).toString(),
+    expiryDate: RSAUtils.decrypt(rsaKeys.privateKey, Buffer.from(encryptedExpiryDate, 'base64')).toString(),
+    phoneNumber: RSAUtils.decrypt(rsaKeys.privateKey, Buffer.from(encryptedPhoneNumber, 'base64')).toString(),
+    dateOfBirth: RSAUtils.decrypt(rsaKeys.privateKey, Buffer.from(encryptedDOB, 'base64')).toString(),
+  };
 
   return {
     user: {
@@ -76,6 +95,14 @@ export async function registerUser(userData: CreateUserRequest): Promise<any> {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     },
+    encryptedData: {
+      cardNumber: encryptedCardNumber,
+      cvv: encryptedCVV,
+      expiryDate: encryptedExpiryDate,
+      phoneNumber: encryptedPhoneNumber,
+      dateOfBirth: encryptedDOB,
+    },
+    decryptedData, // Only included for testing purposes, remove in production
     message: 'Registration successful'
   };
 }
