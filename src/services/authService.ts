@@ -41,7 +41,6 @@ export async function registerUser(userData: CreateUserRequest): Promise<any> {
   const accountNumber = generateAccountNumber();
   const card = generateVirtualCard();
 
-  // Encrypt sensitive data
   const encryptedCardNumber = RSAUtils.encrypt(rsaKeys.publicKey, card.cardNumber).toString('base64');
   const encryptedCVV = RSAUtils.encrypt(rsaKeys.publicKey, card.cvv).toString('base64');
   const encryptedExpiryDate = RSAUtils.encrypt(rsaKeys.publicKey, card.expiry).toString('base64');

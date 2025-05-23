@@ -1,8 +1,7 @@
-// src/config/keys.ts
-import fs from 'fs';
-import path from 'path';
+const publicKey = (process.env.RSA_PUBLIC ?? '').replace(/\\n/g, '\n');
+const privateKey = (process.env.RSA_PRIVATE ?? '').replace(/\\n/g, '\n');
 
 export const rsaKeys = {
-  publicKey: fs.readFileSync(path.resolve(__dirname, '../../public.pem'), 'utf8'),
-  privateKey: fs.readFileSync(path.resolve(__dirname, '../../private.pem'), 'utf8'),
+  publicKey,
+  privateKey
 };
