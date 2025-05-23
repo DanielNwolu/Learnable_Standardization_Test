@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { NotFoundError, BadRequestError } from '../utils/errorClasses';
-import { Session, PartialSession, EncodeResult, DecodeResult, ExpirationStatus } from '../interfaces/authInterface';
-import { decodeSession, checkExpirationStatus, encodeSession } from '../config/jwt';
-import config from "../config/config";
-import User from '../models/userModel'; // Assuming you have a User model
-import { CreateUserRequest, UpdateUserRequest, UserResponse } from '../interfaces/userInterface';
+import { NotFoundError} from '../utils/errorClasses';
+import { CreateUserRequest} from '../interfaces/userInterface';
 import { registerUser, authenticateUser} from '../services/authService';
 
 
