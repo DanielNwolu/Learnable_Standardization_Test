@@ -6,13 +6,13 @@ import { VirtualCardModel } from '../models/virtualCardModel';
 import { generateAccountNumber } from '../utils/generateAccount';
 import { generateVirtualCard } from '../utils/generateVirtualCard';
 import { RSAUtils } from '../utils/encryption';
-import settings from '../config/config';
 import { NotFoundError, BadRequestError } from '../utils/errorClasses';
 import { PartialSession } from '../interfaces/authInterface';
 import { encodeSession } from '../config/jwt';
 import config from '../config/config';
 import { CreateUserRequest, UserResponse } from '../interfaces/userInterface';
 import {rsaKeys} from '../config/keys';
+
 
 if (!rsaKeys.publicKey || !rsaKeys.privateKey) {
   throw new Error('RSA key pair is not configured in environment variables');

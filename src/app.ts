@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import settings from './config/config';
 import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 import { errorHandler } from './middleware/errorMiddleware';
 import { requestLogger } from './middleware/loggingMiddleware';
 import { NotFoundError } from './utils/errorClasses';
@@ -22,7 +23,8 @@ app.use(express.urlencoded({ extended: true }));
 const apiVersion = settings.api;
 console.log(`API Version: ${apiVersion}`);
 
-app.use(`/api/v1/auth`, authRoutes)
+app.use(`/api/v1/auth`, authRoutes);
+app.use(`/api/v1/users`, userRoutes);
 
 // Handle undefined routes
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
