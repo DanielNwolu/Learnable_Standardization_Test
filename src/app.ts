@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import settings from './config/config';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
+import decryptRoute from './routes/decryptDataRoute';
 import { errorHandler } from './middleware/errorMiddleware';
 import { requestLogger } from './middleware/loggingMiddleware';
 import { NotFoundError } from './utils/errorClasses';
@@ -25,6 +26,8 @@ console.log(`API Version: ${apiVersion}`);
 
 app.use(`/api/v1/auth`, authRoutes);
 app.use(`/api/v1/users`, userRoutes);
+app.use(`/api/v1/decrypt`, decryptRoute);
+
 
 // Handle undefined routes
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
