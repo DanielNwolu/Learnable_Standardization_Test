@@ -12,7 +12,8 @@ const envSchema = Joi.object().keys({
   ACCESS_TOKEN_SECRET: Joi.string().min(8).required(),
   API_V1_STR:Joi.string().required(),
   MONGO_URI:Joi.string().required(),
-
+  GITHUB_REPO_LINK: Joi.string().uri().required(),
+  POSTMAN_DOC_LINK: Joi.string().uri().required(),
 });
 
 const { value: validatedEnv, error } = envSchema
@@ -46,6 +47,8 @@ const settings = {
   },
   api:validatedEnv.API_V1_STR,
   dbUrl:validatedEnv.MONGO_URI,
+  githubRepoLink: validatedEnv.GITHUB_REPO_LINK,
+  postmanDocLink: validatedEnv.POSTMAN_DOC_LINK,
 } as const;
 
 export default settings;
