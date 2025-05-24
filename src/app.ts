@@ -15,6 +15,7 @@ import { compileTemplateRaw } from './utils/templateEng';
 
 
 
+
 const app: Application = express();
 
 // Middleware
@@ -32,6 +33,8 @@ app.use(morgan("[ :date ] :coloured-method :url :status :response-time ms"));
 // Route for home page
 app.get('/', (req: Request, res: Response) => {
   res.send(compileTemplateRaw(homepageTemplate, {
+    POSTMAN_DOC_LINK: settings.postmanDocLink,
+    GITHUB_LINK: settings.githubRepoLink,
 }
 ));
 });
