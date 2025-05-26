@@ -32,7 +32,19 @@ export const validateCreateUser = (req: Request, res: Response, next: NextFuncti
   next();
 };
 
+// Validation schema for decryption
+const decryptSchema = Joi.object({
+  encryptedData: Joi.string().required().base64()
+});
 
+// Validation function for decryption
+export const validateDecrypt = (req: Request, _: Response, next: NextFunction) => {
+  const { error } = decryptSchema.validate(req.body);
+  if (error) {
+    return next(new BadRequestError(`Validation error: ${error.details.map(detail => detail.message).join(', ')}`));
+  }
+  next();
+};
 
 
 

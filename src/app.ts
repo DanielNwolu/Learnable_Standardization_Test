@@ -7,8 +7,7 @@ import morgan from './utils/logger';
 import authRoutes from './routes/accountRoutes';
 import decryptRoute from './routes/decryptDataRoute';
 import { errorHandler } from './middleware/errorMiddleware';
-import { requestLogger } from './middleware/loggingMiddleware';
-import { NotFoundError } from './utils/errorClasses';
+import { NotFoundError,BadRequestError } from './utils/errorClasses';
 import homepageTemplate from './templates/homepage';
 import { compileTemplateRaw } from './utils/templateEng';
 
@@ -22,6 +21,15 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use((err: BadRequestError, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof SyntaxError && (err as any).status === 400 && 'body' in err) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Invalid JSON payload'
+    });
+  }
+  next(err);
+});
 
 
 
