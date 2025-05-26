@@ -95,7 +95,39 @@ openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
 openssl rsa -pubout -in private.pem -out public.pem
 ```
 
-**Important**: Copy the contents of `private.pem` and `public.pem` into your `.env` file as single-line strings (replace newlines with `\n`).
+**Important**: Copy the contents of `private.pem` and `public.pem` into your `.env` file as single-line strings (replace newlines with `\n`) or use run this code below .
+Run this script to properly format your RSA keys for the `.env` file:
+
+```js
+// formatRsaKeyForEnv.js
+const fs = require('fs');
+const path = require('path');
+
+function formatPemToEnvString(filePath, keyName) {
+   if (!fs.existsSync(filePath)) {
+      throw new Error(`File not found: ${filePath}`);
+   }
+
+   const raw = fs.readFileSync(filePath, 'utf-8').trim();
+   const escaped = raw.replace(/\r?\n/g, '\\n') + '\\n%';
+
+   return `${keyName}=${escaped}`;
+}
+
+// Example usage:
+const privateKeyEnv = formatPemToEnvString('./private.pem', 'RSA_PRIVATE');
+const publicKeyEnv = formatPemToEnvString('./public.pem', 'RSA_PUBLIC');
+
+console.log('\nPaste into .env:\n');
+console.log(privateKeyEnv);
+console.log();
+console.log(publicKeyEnv);
+```
+
+Save as `formatRsaKeyForEnv.js` and run:
+```bash
+node formatRsaKeyForEnv.js
+```
 
 ## 🏃‍♂️ Running the Application
 
@@ -117,9 +149,8 @@ The server will start on `http://localhost:8000` (or your configured PORT).
 
 | Method | Endpoint | Description | Trial |
 |--------|----------|-------------|-------|
-| POST | `/signup` | Create bank account with virtual card | Trial of Identity & Card |
-| POST | `/login` | User authentication | Authentication System |
-| GET | `/users` | Get all accounts with encrypted/decrypted data | Trial of the Ledger |
+| POST | `/accounts/register` | Create bank account with virtual card | Trial of Identity & Card |
+| GET | `/accounts` | Get all accounts with encrypted/decrypted data | Trial of the Ledger |
 | POST | `/decrypt` | Decrypt encrypted data and return plain text | Trial of the Cipher |
 
 **The Five Trials of Revival Implemented:**
@@ -141,6 +172,7 @@ Base URL: `https://learnable-standardization-test-wh0x.onrender.com`
 finable/
 ├── src/
 │   ├── controllers/     # Route controllers
+│   ├── services/         # Route services
 │   ├── models/         # Database models
 │   ├── routes/         # API routes
 │   ├── middleware/     # Custom middleware

@@ -8,7 +8,6 @@ export interface User extends Document {
     phoneNumber: string;
     dateOfBirth: Date;
     accountNumber: string; // 10-digit number
-    password?: string;
     createdAt: Date;
     updatedAt: Date;
     comparePassword(candidatePassword: string): Promise<boolean>;
@@ -21,7 +20,6 @@ export interface CreateUserRequest {
     email: string;
     phoneNumber: string;
     dateOfBirth: Date;
-    password: string;
 }
 
 // for user update validation

@@ -4,8 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import settings from './config/config';
 import morgan from './utils/logger';
-import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/userRoutes';
+import authRoutes from './routes/accountRoutes';
 import decryptRoute from './routes/decryptDataRoute';
 import { errorHandler } from './middleware/errorMiddleware';
 import { requestLogger } from './middleware/loggingMiddleware';
@@ -43,8 +42,7 @@ app.get('/', (req: Request, res: Response) => {
 // API Version
 const apiVersion = settings.api;
 // API routes
-app.use(`${apiVersion}/auth`, authRoutes);
-app.use(`${apiVersion}/users`, userRoutes);
+app.use(`${apiVersion}/accounts`, authRoutes);
 app.use(`${apiVersion}/decrypt`, decryptRoute);
 
 // Handle undefined routes
