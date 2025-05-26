@@ -64,18 +64,6 @@ const userSchema = new Schema(
       message: 'Please provide a valid date of birth'
     }
     },
-    password: {
-      type: String,
-      required: [true, 'Password is required'],
-      trim: true,
-      minlength: [8, 'Password must be at least 8 characters'],
-      validate: {
-        validator: function(v: string) {
-          return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/.test(v);
-        },
-        message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
-      }
-    }
   },
   {
     timestamps: true,
@@ -83,18 +71,6 @@ const userSchema = new Schema(
   }
 );
 
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error: any) {
-    next(error);
-  }
-});
 
 // Method to compare passwords
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {

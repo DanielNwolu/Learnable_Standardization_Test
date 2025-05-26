@@ -7,10 +7,7 @@ import { generateAccountNumber } from '../utils/generateAccount';
 import { generateVirtualCard } from '../utils/generateVirtualCard';
 import { RSAUtils } from '../utils/encryption';
 import { NotFoundError, BadRequestError } from '../utils/errorClasses';
-import { PartialSession } from '../interfaces/authInterface';
-import { encodeSession } from '../config/jwt';
-import config from '../config/config';
-import { CreateUserRequest, UserResponse } from '../interfaces/userInterface';
+import { CreateUserRequest} from '../interfaces/userInterface';
 import {rsaKeys} from '../config/keys';
 
 
@@ -21,8 +18,10 @@ if (!rsaKeys.publicKey || !rsaKeys.privateKey) {
 function hashPhone(phoneNumber: string): string {
   return crypto.createHash('sha256').update(phoneNumber).digest('hex');
 }
-export async function registerUser(userData: CreateUserRequest): Promise<any> {
-  const { firstName, surname, email, phoneNumber, dateOfBirth, password } = userData;
+
+
+export async function registerAccount(userData: CreateUserRequest): Promise<any> {
+  const { firstName, surname, email, phoneNumber, dateOfBirth } = userData;
 
   const phoneHash = hashPhone(phoneNumber);
 
@@ -51,7 +50,6 @@ export async function registerUser(userData: CreateUserRequest): Promise<any> {
     firstName,
     surname,
     email,
-    password,
     phoneNumber: phoneHash,
     accountNumber,
     dateOfBirth
@@ -106,60 +104,39 @@ export async function registerUser(userData: CreateUserRequest): Promise<any> {
   };
 }
 
-export async function loginUser(email: string, password: string): Promise<UserResponse | null> {
-  const user = await User.findOne({ email });
-  if (!user) return null;
-  const isMatch = await user.comparePassword(password);
-  if (!isMatch) return null;
 
-  return {
-    _id: user._id,
-    firstName: user.firstName,
-    surname: user.surname,
-    email: user.email,
-    phoneNumber: user.phoneNumber,
-    dateOfBirth: user.dateOfBirth,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt
-  };
-}
+export const getAllAccounts = async (): Promise<any> => {
+    const users = await User.find({});
 
-export async function authenticateUser(email: string, password: string): Promise<{ user: UserResponse; token: string; expires: number }> {
-  if (!email || !password) {
-    throw new BadRequestError('Email and password are required');
-  }
+    const data = [];
 
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new NotFoundError('User not found');
-  }
+    for (const user of users) {
+        const cardDatails= await VirtualCardModel.findOne({ customerId: user._id });
+        const encryptedData = await EncryptData.findOne({ userId: user._id });
+        if (!cardDatails || !encryptedData) {
+            throw new NotFoundError('Card or encrypted data not found');
+        }
+        const userData = {
+            userId: user._id,
+            fullName: `${user.firstName} ${user.surname}`,
+            accountNumber: user.accountNumber,
+        }
+        const decryptedData = {
+            userId: cardDatails.customerId,
+            cardNumber: RSAUtils.decrypt(rsaKeys.privateKey, Buffer.from(encryptedData.cardNumber, 'base64')).toString(),
+            cvv: RSAUtils.decrypt(rsaKeys.privateKey, Buffer.from(encryptedData.cvv, 'base64')).toString(),
+            expiryDate: RSAUtils.decrypt(rsaKeys.privateKey, Buffer.from(encryptedData.expiryDate, 'base64')).toString(),
+            phoneNumber: RSAUtils.decrypt(rsaKeys.privateKey, Buffer.from(encryptedData.phoneNumber, 'base64')).toString(),
+            dateOfBirth: RSAUtils.decrypt(rsaKeys.privateKey, Buffer.from(encryptedData.dateOfBirth, 'base64')).toString(),
+        }
 
-  const isPasswordValid = await user.comparePassword(password);
-  if (!isPasswordValid) {
-    throw new BadRequestError('Invalid email or password');
-  }
+        data.push({
+            userDate:userData,
+            decryptedData:decryptedData,
+            encryptedData,
+        });
+    }
 
-  const session: PartialSession = {
-    id: user.id,
-    firstName: user.firstName,
-    email: user.email,
-    dateCreated: Date.now(),
-  };
+    return data;
 
-  const { token, expires } = encodeSession(config.jwt.access_token, session);
-
-  return {
-    user: {
-      _id: user._id,
-      firstName: user.firstName,
-      surname: user.surname,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      dateOfBirth: user.dateOfBirth,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    },
-    token,
-    expires,
-  };
 }
